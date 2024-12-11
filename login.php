@@ -1,48 +1,41 @@
 <?php
-require 'database.php'; // Include the database connection
-session_start(); // Start session to manage user login state
+session_start();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-    // Basic validation
-    if (empty($username) || empty($password)) {
-        echo "Username and password are required!";
-        exit();
-    }
+    // Load user data from the file
+    $users = file('users.txt', FILE_IGNORE_NEW_LINES);
+    $validUser  = false;
 
-    try {
-        // Query the database to find the user by username
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
-        $stmt->execute([':username' => $username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Check if the user exists and the password matches
-        if ($user && $user['password'] === $password) {
-            $_SESSION['user_id'] = $user['id']; // Store user ID in session
-            header('Location: index.php'); // Redirect to main page
+    foreach ($users as $user) {
+        list($storedUsername, $storedHashedPassword) = explode(':', $user);
+        if ($username === $storedUsername && password_verify($password, $storedHashedPassword)) {
+            $_SESSION['username'] = $username;
+            header('Location: index.php');
             exit();
-        } else {
-            echo "Invalid username or password!";
         }
-    } catch (PDOException $e) {
-        echo "Error: " . $e->getMessage();
     }
+
+    echo "Invalid username or password.";
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 </head>
 <body>
     <h2>Login</h2>
-    <form action="login.php" method="post">
-        <input type="text" name="username" placeholder="Username" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
         <button type="submit">Login</button>
     </form>
-    <p>Don't have an account? <a href="signup.php">Sign up here</a></p>
+    <p>Don't have an account? <a href="signup.php">Sign up</a></p>
 </body>
 </html>

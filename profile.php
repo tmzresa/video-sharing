@@ -1,24 +1,25 @@
 <?php
-require 'database.php';
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+if (!isset($_SESSION['username'])) {
+    header('Location: index.php');
     exit();
 }
 
-$stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-$stmt->execute([':id' => $_SESSION['user_id']]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$username = $_SESSION['username'];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>My Profile</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
 </head>
 <body>
-    <h2>My Profile</h2>
-    <p>Username: <?= htmlspecialchars($user['username']) ?></p>
+    <h2>User Profile</h2>
+    <p>Welcome, <?php echo htmlspecialchars($username); ?>!</p>
+    <a href="upload.php">Upload Video</a>
     <a href="logout.php">Logout</a>
 </body>
 </html>
